@@ -1,0 +1,7 @@
+.github/
+.vscode/
+tests/
+img/paypal.svg
+LICENSE
+README.md
+sonar-project.properties
