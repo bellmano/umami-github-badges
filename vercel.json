@@ -6,16 +6,20 @@
       "dest": "/api/api.js"
     },
     {
-      "src": "/src/style.css",
-      "dest": "/src/style.css"
+      "src": "/src/(.*)",
+      "dest": "/src/$1"
     },
     {
       "src": "/img/(.*)",
       "dest": "/img/$1"
     },
     {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/api.js"
+      "dest": "/index.html"
     }
   ],
   "functions": {
