@@ -1,4 +1,4 @@
-# :rocket: Umami GitHub Badges
+# :ramen: Umami GitHub Badges
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bellmano_umami-github-badges&metric=coverage&token=6e9bb50bb14b2d851f65c161bef4a5e41dc5050c)](https://sonarcloud.io/summary/overall?id=bellmano_umami-github-badges)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=bellmano_umami-github-badges&metric=security_rating&token=6e9bb50bb14b2d851f65c161bef4a5e41dc5050c)](https://sonarcloud.io/summary/overall?id=bellmano_umami-github-badges)
