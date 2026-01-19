@@ -2,10 +2,10 @@
   "name": "umami-github-badges",
   "version": "1.0.0",
   "description": "Generate GitHub badges for your Umami analytics data",
-  "main": "src/api.js",
+  "main": "api/api.js",
   "scripts": {
-    "start": "node src/api.js",
-    "dev": "node src/api.js",
+    "start": "node api/api.js",
+    "dev": "node api/api.js",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
@@ -16,7 +16,7 @@
   "jest": {
     "testEnvironment": "jsdom",
     "collectCoverageFrom": [
-      "src/api.js",
+      "api/api.js",
       "src/script.js"
     ],
     "coverageDirectory": "coverage",

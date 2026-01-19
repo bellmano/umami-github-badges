@@ -1,4 +1,4 @@
-const { fetchUmamiData, formatMetricValue, formatNumber, formatDuration, getDefaultLabel, getMetricColor, buildShieldsUrl } = require('../src/api.js');
+const { fetchUmamiData, formatMetricValue, formatNumber, formatDuration, getDefaultLabel, getMetricColor, buildShieldsUrl } = require('../api/api.js');
 
 // Mock node-fetch
 jest.mock('node-fetch', () => jest.fn());
