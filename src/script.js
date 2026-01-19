@@ -1,8 +1,3 @@
-document.getElementById('badgeForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    generateBadge();
-});
-
 function generateBadge() {
     const umamiUrl = document.getElementById('umamiUrl').value;
     const websiteId = document.getElementById('websiteId').value;
@@ -65,69 +60,73 @@ function copyToClipboard(elementId) {
     }, 1000);
 }
 
-// Update metric-based auto-suggestions
-document.getElementById('metric').addEventListener('change', function() {
-    const metric = this.value;
-    const colorSelect = document.getElementById('color');
-    const labelInput = document.getElementById('label');
-    
-    // Auto-suggest labels
-    if (!labelInput.value) {
-        labelInput.placeholder = getDefaultLabel(metric);
-    }
-    
-    // Reset color to auto when metric changes
-    colorSelect.value = '';
-});
-
-// Theme switching functionality
-const themeToggle = document.getElementById('theme-toggle');
-const htmlElement = document.documentElement;
-
 // Function to update the icon based on theme
 function updateThemeIcon(theme) {
-    // Clear the button content
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+
     themeToggle.innerHTML = '';
-    
-    // Create the appropriate icon
+
     const icon = document.createElement('i');
-    
-    // Use moon icon for light mode (to switch to dark) and sun icon for dark mode (to switch to light)
+
+    // Moon icon in light mode (switch to dark), sun icon in dark mode (switch to light)
     if (theme === 'light') {
-        icon.className = 'fas fa-moon'; // Moon icon for switching to dark mode
+        icon.className = 'fas fa-moon';
     } else {
-        icon.className = 'fas fa-sun';  // Sun icon for switching to light mode
+        icon.className = 'fas fa-sun';
     }
-    
-    // Add the icon to the button
+
     themeToggle.appendChild(icon);
 }
 
 // Function to toggle theme
 function toggleTheme() {
+    const htmlElement = document.documentElement;
     const currentTheme = htmlElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
-    // Update the theme
+
     htmlElement.setAttribute('data-theme', newTheme);
-    
-    // Update the icon
     updateThemeIcon(newTheme);
-    
-    // Store the theme preference in localStorage
     localStorage.setItem('theme', newTheme);
 }
 
-// Add event listener to the theme toggle button
-themeToggle.addEventListener('click', toggleTheme);
+document.addEventListener('DOMContentLoaded', () => {
+    const badgeForm = document.getElementById('badgeForm');
+    if (badgeForm) {
+        badgeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            generateBadge();
+        });
+    }
 
-// Check for saved theme preference or use default
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-    htmlElement.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
-} else {
-    // Set initial icon based on the default theme in HTML
-    const initialTheme = htmlElement.getAttribute('data-theme');
-    updateThemeIcon(initialTheme);
-}
+    const metricSelect = document.getElementById('metric');
+    if (metricSelect) {
+        metricSelect.addEventListener('change', function() {
+            const metric = this.value;
+            const colorSelect = document.getElementById('color');
+            const labelInput = document.getElementById('label');
+
+            if (labelInput && !labelInput.value) {
+                labelInput.placeholder = getDefaultLabel(metric);
+            }
+
+            if (colorSelect) {
+                colorSelect.value = '';
+            }
+        });
+    }
+
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    const htmlElement = document.documentElement;
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        htmlElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    } else {
+        updateThemeIcon(htmlElement.getAttribute('data-theme'));
+    }
+});
