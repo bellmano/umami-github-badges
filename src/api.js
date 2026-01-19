@@ -146,8 +146,8 @@ function formatMetricValue(data, metric) {
       case 'avg-session':
         const totalTime = data.totaltime?.value || 0;
         const sessions = data.sessions?.value || 1;
-        const avgSeconds = totalTime / sessions;
-        formattedValue = formatDuration(avgSeconds);
+        value = totalTime / sessions;
+        formattedValue = formatDuration(value);
         break;
       default:
         formattedValue = 'Unknown';
@@ -238,9 +238,20 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`🚀 Umami GitHub Badges server running on port ${port}`);
-  console.log(`📊 Ready to generate badges from Umami analytics!`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`🚀 Umami GitHub Badges server running on port ${port}`);
+    console.log(`📊 Ready to generate badges from Umami analytics!`);
+  });
+}
 
 module.exports = app;
+
+// Export functions for testing
+module.exports.fetchUmamiData = fetchUmamiData;
+module.exports.formatMetricValue = formatMetricValue;
+module.exports.formatNumber = formatNumber;
+module.exports.formatDuration = formatDuration;
+module.exports.getDefaultLabel = getDefaultLabel;
+module.exports.getMetricColor = getMetricColor;
+module.exports.buildShieldsUrl = buildShieldsUrl;
