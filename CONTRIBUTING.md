@@ -10,10 +10,8 @@
 
 ## Development Setup
 
-1. Install [Node.js (18+ recommended)](https://nodejs.org/)
-2. Clone the repository: `git clone https://github.com/bellmano/umami-github-badges.git`
-3. Install dependencies: `npm install`
-4. Run the development server (if applicable): `npm run dev` or `npm start`
+1. Clone the repository: `git clone https://github.com/bellmano/umami-github-badges.git`
+2. Install dependencies: `npm install`
 
 ## Testing
 
