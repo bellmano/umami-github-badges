@@ -3,12 +3,14 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened]
 jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
