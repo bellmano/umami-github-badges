@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/api.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/src/api.js"
+    },
+    {
+      "src": "/src/style.css",
+      "dest": "/src/style.css"
+    },
+    {
+      "src": "/img/(.*)",
+      "dest": "/img/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/src/api.js"
+    }
+  ],
+  "functions": {
+    "src/api.js": {
+      "maxDuration": 10
+    }
+  }
+}

@@ -1,0 +1,170 @@
+:root {
+    --bg-color: #f0f0f0;
+    --text-color: #333;
+    --container-bg: #fff;
+    --border-color: #333;
+    --footer-color: #666;
+    --button-bg: #333;
+    --button-text: #fff;
+    --button-hover: #555;
+}
+
+[data-theme="light"] {
+    --bg-color: #f0f0f0;
+    --text-color: #333;
+    --container-bg: #fff;
+    --border-color: #333;
+    --footer-color: #666;
+    --button-bg: #333;
+    --button-text: #fff;
+    --button-hover: #555;
+}
+
+[data-theme="dark"] {
+    --bg-color: #222;
+    --text-color: #f0f0f0;
+    --container-bg: #333;
+    --border-color: #555;
+    --footer-color: #aaa;
+    --button-bg: #f0f0f0;
+    --button-text: #333;
+    --button-hover: #ddd;
+}
+
+body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#theme-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s, transform 0.2s;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#theme-toggle:hover {
+    background-color: var(--button-hover);
+    transform: scale(1.05);
+}
+
+#theme-toggle:active {
+    transform: scale(0.95);
+}
+
+footer {
+    color: var(--footer-color) !important;
+    transition: color 0.3s;
+}
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+footer p {
+    margin: 0;
+}
+
+.social-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.github-link,
+.linkedin-link {
+    color: var(--footer-color);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 5px;
+    border-radius: 6px;
+}
+
+.github-link:hover,
+.linkedin-link:hover {
+    color: var(--text-color);
+    transform: translateY(-2px);
+    background-color: rgba(128, 128, 128, 0.1);
+}
+
+.github-icon,
+.linkedin-icon {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+}
+
+.github-link:hover .github-icon,
+.linkedin-link:hover .linkedin-icon {
+    transform: scale(1.1);
+}
+
+/* Overrides for Tailwind classes in dark mode */
+[data-theme="dark"] .bg-gray-50 {
+    background-color: var(--bg-color) !important;
+}
+
+[data-theme="dark"] .bg-white {
+    background-color: var(--container-bg) !important;
+}
+
+[data-theme="dark"] .text-gray-800 {
+    color: var(--text-color) !important;
+}
+
+[data-theme="dark"] .text-gray-600 {
+    color: var(--text-color) !important;
+}
+[data-theme="dark"] .text-gray-700 {
+    color: var(--text-color) !important;
+}
+[data-theme="dark"] .text-gray-500 {
+    color: var(--text-color) !important;
+}
+
+[data-theme="dark"] .border-gray-300 {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .bg-gray-100 {
+    background-color: #444 !important;
+}
+
+[data-theme="dark"] .hover\:bg-blue-600:hover {
+    background-color: #2563eb !important;
+}
+
+/* Input fields in dark mode */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background-color: var(--container-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Readonly inputs with bg-gray-50 */
+[data-theme="dark"] input.bg-gray-50 {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
