@@ -10,16 +10,6 @@
 
 Generate beautiful, dynamic GitHub badges for your Umami website analytics! Show off your website traffic, page views, and visitor stats directly in your README files.
 
-## :sparkles: Features
-
-- :bar_chart: **Real-time analytics badges** from your Umami dashboard
-- :art: **Multiple badge styles** and colors (powered by shields.io)
-- :zap: **Fast, cached responses** for better performance
-- :lock: **Secure API key handling**
-- :globe_with_meridians: **Easy integration** with any GitHub repository
-- :iphone: **Responsive web interface** for badge generation
-- :dart: **Support for multiple metrics** (views, visitors, sessions, etc.)
-
 ## :rocket: Quick Start
 
 ### 1. Find Your Umami Details
