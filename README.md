@@ -103,6 +103,6 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 Any issues or suggestions, please [create an issue on Github](https://github.com/bellmano/umami-github-badges/issues).
 
 ## :coffee: Buy me a coffee
-Donations are welcome to appreciate my work to keep this website alive, but isn't required at all.
+Donations are welcome to appreciate my work to keep this project alive, but isn't required at all.
 
 <a href="https://ko-fi.com/bellmano"><img src="img/bellmano-kofi.jpg" width="50%"></a>
