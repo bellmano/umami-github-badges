@@ -12,12 +12,13 @@ Generate beautiful, dynamic GitHub badges for your Umami website analytics! Show
 
 ## :rocket: Quick Start
 
-### 1. Find Your Umami Details
+### 1. Get Your Website ID and API Key
 
 You'll need:
-- Your Umami website URL (e.g., `https://analytics.yoursite.com`)
-- Your website ID from Umami (found in Settings → Websites)
-- An API token (optional, only if your Umami instance requires it)
+- Your Website ID (found in your website settings)
+- An API key (Account Settings → API keys)
+
+**Note:** This service is designed for **Umami Cloud** (https://cloud.umami.is) which uses the API endpoint `https://api.umami.is/v1`. If you're self-hosting Umami, you'll need to modify the code to point to your instance.
 
 ### 2. Generate Your Badge
 
@@ -27,58 +28,33 @@ Visit: **[umami-github-badges.vercel.app](https://umami-github-badges.vercel.app
 
 **Option B: Create URL Manually**
 ```
-https://umami-github-badges.vercel.app/api/{metric}?website={WEBSITE_ID}&umami_url={UMAMI_URL}
+https://umami-github-badges.vercel.app/api/{metric}?website={WEBSITE_ID}&token={API_TOKEN}&range=all&style=for-the-badge
 ```
 
 ### 3. Add to Your README
 
 ```markdown
-![Website Analytics](https://umami-github-badges.vercel.app/api/views?website=your-website-id&umami_url=https://analytics.yoursite.com)
+![Website Analytics](https://umami-github-badges.vercel.app/api/views?website=your-website-id&token=your-api-token&range=all&style=for-the-badge)
 ```
 
 ## :bar_chart: Available Metrics
 
 | Metric | Description | Example |
 |--------|-------------|---------|
-| `views` | Total page views | ![Views](https://img.shields.io/badge/Views-12.5K-brightgreen?style=flat-square) |
-| `visitors` | Unique visitors | ![Visitors](https://img.shields.io/badge/Visitors-3.2K-green?style=flat-square) |
-| `sessions` | Total sessions | ![Sessions](https://img.shields.io/badge/Sessions-8.9K-blue?style=flat-square) |
-| `bounce-rate` | Bounce rate percentage | ![Bounce Rate](https://img.shields.io/badge/Bounce%20Rate-45.2%25-orange?style=flat-square) |
-| `avg-session` | Average session duration | ![Avg Session](https://img.shields.io/badge/Avg%20Session-2.5m-purple?style=flat-square) |
+| `views` | Total page views | ![Views](https://img.shields.io/badge/Views-12.5K-brightgreen?style=for-the-badge) |
+| `visitors` | Unique visitors | ![Visitors](https://img.shields.io/badge/Visitors-3.2K-green?style=for-the-badge) |
+| `visits` | Total visits | ![Visits](https://img.shields.io/badge/Visits-8.9K-blue?style=for-the-badge) |
+| `bounce-rate` | Bounce rate percentage | ![Bounce Rate](https://img.shields.io/badge/Bounce%20Rate-45.2%25-orange?style=for-the-badge) |
+| `avg-session` | Average session duration | ![Avg Session](https://img.shields.io/badge/Avg%20Session-2.5m-purple?style=for-the-badge) |
 
 ## :art: Customization Options
 
 | Parameter | Description | Values |
 |-----------|-------------|--------|
+| `range` | Time range for stats | `7d`, `30d`, `90d`, `all` (default: `all`) |
 | `style` | Badge style | `flat`, `flat-square`, `for-the-badge`, `plastic`, `social` |
 | `color` | Badge color | `brightgreen`, `green`, `blue`, `red`, `orange`, `yellow`, `purple`, or hex codes |
 | `label` | Custom label text | Any text (URL encoded) |
-| `logo` | Logo from Simple Icons | `analytics`, `umami`, `github`, etc. |
-| `cache` | Cache duration in seconds | Default: `300` (5 minutes) |
-
-## :book: Examples
-
-### Basic Usage
-```markdown
-![Views](https://umami-github-badges.vercel.app/api/views?website=abc123&umami_url=https://analytics.example.com)
-```
-
-### Custom Styling
-```markdown
-![Visitors](https://umami-github-badges.vercel.app/api/visitors?website=abc123&umami_url=https://analytics.example.com&style=for-the-badge&color=brightgreen&label=Unique%20Visitors)
-```
-
-### Multiple Badges in a Row
-```markdown
-![Views](https://umami-github-badges.vercel.app/api/views?website=abc123&umami_url=https://analytics.example.com&style=flat-square)
-![Visitors](https://umami-github-badges.vercel.app/api/visitors?website=abc123&umami_url=https://analytics.example.com&style=flat-square)
-![Sessions](https://umami-github-badges.vercel.app/api/sessions?website=abc123&umami_url=https://analytics.example.com&style=flat-square)
-```
-
-### With Custom Colors and Logos
-```markdown
-![Analytics](https://umami-github-badges.vercel.app/api/views?website=abc123&umami_url=https://analytics.example.com&style=for-the-badge&color=ff6b6b&logo=analytics&label=Total%20Views)
-```
 
 ## :test_tube: Running Tests
 

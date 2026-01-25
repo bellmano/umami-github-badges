@@ -12,6 +12,8 @@
 
 1. Clone the repository: `git clone https://github.com/bellmano/umami-github-badges.git`
 2. Install dependencies: `npm install`
+3. Run the app locally: `npm start`
+4. Open your browser to `http://localhost:3000`
 
 ## Testing
 

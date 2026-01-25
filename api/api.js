@@ -7,6 +7,9 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Hardcoded Umami Cloud API URL
+const UMAMI_URL = 'https://api.umami.is/v1';
+
 // Cache for 5 minutes by default
 const cache = new NodeCache({ stdTTL: 300 });
 
@@ -24,27 +27,31 @@ app.get('/api/:metric', async (req, res) => {
     const { metric } = req.params;
     const {
       website,
-      umami_url,
       token,
-      style = 'flat',
+      style = 'for-the-badge',
       color = 'blue',
       label,
       logo,
+      range = 'all',
       cache: cacheParam = '300'
     } = req.query;
 
     // Validate required parameters
-    if (!website || !umami_url) {
-      return res.redirect(`https://img.shields.io/badge/Error-Missing%20Parameters-red?style=${style}`);
+    if (!website) {
+      return res.redirect(`https://img.shields.io/badge/Error-Missing%20Website%20ID-red?style=${style}`);
+    }
+
+    if (!token) {
+      return res.redirect(`https://img.shields.io/badge/Error-Missing%20API%20Token-red?style=${style}`);
     }
 
     // Create cache key
-    const cacheKey = `${website}-${metric}-${umami_url}`;
+    const cacheKey = `${website}-${metric}-${range}-${token.substring(0, 8)}`;
     let data = cache.get(cacheKey);
 
     if (!data) {
       // Fetch data from Umami API
-      data = await fetchUmamiData(umami_url, website, token, metric);
+      data = await fetchUmamiData(UMAMI_URL, website, token, metric, range);
       
       // Cache the result
       const cacheTime = parseInt(cacheParam) || 300;
@@ -75,44 +82,37 @@ app.get('/api/:metric', async (req, res) => {
 });
 
 // Fetch data from Umami API
-async function fetchUmamiData(umamiUrl, websiteId, token, metric) {
+async function fetchUmamiData(umamiUrl, websiteId, token, metric, range = 'all') {
   const baseUrl = umamiUrl.replace(/\/$/, ''); // Remove trailing slash
   
-  // Different endpoints for different metrics
-  const endpoints = {
-    views: `/api/websites/${websiteId}/stats`,
-    visitors: `/api/websites/${websiteId}/stats`,
-    sessions: `/api/websites/${websiteId}/stats`,
-    'bounce-rate': `/api/websites/${websiteId}/stats`,
-    'avg-session': `/api/websites/${websiteId}/stats`
-  };
-
-  const endpoint = endpoints[metric];
-  if (!endpoint) {
-    throw new Error(`Unsupported metric: ${metric}`);
+  // Calculate date range based on range parameter
+  const endDate = new Date().getTime();
+  let startTime;
+  
+  if (range === 'all') {
+    // All-time: Use a date far in the past (e.g., year 2000)
+    startTime = new Date('2000-01-01').getTime();
+  } else {
+    const startDate = new Date();
+    const days = parseInt(range.replace('d', ''));
+    startDate.setDate(startDate.getDate() - days);
+    startTime = startDate.getTime();
   }
 
-  // Calculate date range (last 30 days)
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 30);
-
-  const url = `${baseUrl}${endpoint}?startAt=${startDate.getTime()}&endAt=${endDate.getTime()}`;
+  // Build the stats URL (baseUrl already contains /v1)
+  const url = `${baseUrl}/websites/${websiteId}/stats?startAt=${startTime}&endAt=${endDate}`;
   
   const headers = {
     'Accept': 'application/json',
-    'User-Agent': 'Umami-GitHub-Badges/1.0'
+    'User-Agent': 'Umami-GitHub-Badges/1.0',
+    'x-umami-api-key': token  // Umami uses x-umami-api-key header for API key authentication
   };
-
-  // Add authorization if token is provided
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
   const response = await fetch(url, { headers });
   
   if (!response.ok) {
-    throw new Error(`Umami API error: ${response.status} ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Umami API error: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
   return await response.json();
@@ -126,27 +126,27 @@ function formatMetricValue(data, metric) {
   try {
     switch (metric) {
       case 'views':
-        value = data.pageviews?.value || 0;
+        value = data.pageviews || 0;
         formattedValue = formatNumber(value);
         break;
       case 'visitors':
-        value = data.uniques?.value || 0;
+        value = data.visitors || 0;
         formattedValue = formatNumber(value);
         break;
-      case 'sessions':
-        value = data.sessions?.value || 0;
+      case 'visits':
+        value = data.visits || 0;
         formattedValue = formatNumber(value);
         break;
       case 'bounce-rate':
-        value = data.bounces?.value || 0;
-        const totalViews = data.pageviews?.value || 1;
-        const bounceRate = (value / totalViews) * 100;
+        value = data.bounces || 0;
+        const totalVisits = data.visits || 1;
+        const bounceRate = (value / totalVisits) * 100;
         formattedValue = `${bounceRate.toFixed(1)}%`;
         break;
       case 'avg-session':
-        const totalTime = data.totaltime?.value || 0;
-        const sessions = data.sessions?.value || 1;
-        value = totalTime / sessions;
+        const totalTime = data.totaltime || 0;
+        const visits = data.visits || 1;
+        value = totalTime / visits / 1000; // Convert from ms to seconds
         formattedValue = formatDuration(value);
         break;
       default:
@@ -190,7 +190,7 @@ function getDefaultLabel(metric) {
   const labels = {
     'views': 'Views',
     'visitors': 'Visitors',
-    'sessions': 'Sessions',
+    'visits': 'Visits',
     'bounce-rate': 'Bounce Rate',
     'avg-session': 'Avg Session'
   };
@@ -208,7 +208,7 @@ function getMetricColor(metric, defaultColor, value) {
   const colorMap = {
     'views': 'brightgreen',
     'visitors': 'green',
-    'sessions': 'blue',
+    'visits': 'blue',
     'bounce-rate': value > 70 ? 'red' : value > 40 ? 'orange' : 'green',
     'avg-session': 'purple'
   };

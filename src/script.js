@@ -1,22 +1,22 @@
 function generateBadge() {
-    const umamiUrl = document.getElementById('umamiUrl').value;
     const websiteId = document.getElementById('websiteId').value;
     const metric = document.getElementById('metric').value;
     const token = document.getElementById('token').value;
     const style = document.getElementById('style').value;
     const color = document.getElementById('color').value;
     const label = document.getElementById('label').value;
+    const range = document.getElementById('range').value;
 
-    if (!umamiUrl || !websiteId) {
-        alert('Please fill in the required fields (Umami URL and Website ID)');
+    if (!websiteId || !token) {
+        alert('Please fill in the required fields: (Website ID and API Key)');
         return;
     }
 
     // Build the badge URL
     const params = new URLSearchParams();
     params.append('website', websiteId);
-    params.append('umami_url', umamiUrl);
-    if (token) params.append('token', token);
+    params.append('token', token);
+    if (range) params.append('range', range);
     if (style) params.append('style', style);
     if (color) params.append('color', color);
     if (label) params.append('label', label);
@@ -38,7 +38,7 @@ function getDefaultLabel(metric) {
     const labels = {
         'views': 'Views',
         'visitors': 'Visitors',
-        'sessions': 'Sessions',
+        'visits': 'Visits',
         'bounce-rate': 'Bounce Rate',
         'avg-session': 'Avg Session'
     };
@@ -129,4 +129,42 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         updateThemeIcon(htmlElement.getAttribute('data-theme'));
     }
+
+    // Tooltip functionality
+    const tooltipTriggers = document.querySelectorAll('.tooltip-trigger');
+    tooltipTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const tooltipId = 'tooltip-' + this.dataset.tooltip;
+            const tooltip = document.getElementById(tooltipId);
+            
+            // Close all other tooltips
+            document.querySelectorAll('.tooltip-popup.active').forEach(t => {
+                if (t.id !== tooltipId) {
+                    t.classList.remove('active');
+                }
+            });
+            
+            // Toggle this tooltip
+            tooltip.classList.toggle('active');
+        });
+    });
+
+    // Close tooltips when clicking close button
+    document.querySelectorAll('.tooltip-close').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.closest('.tooltip-popup').classList.remove('active');
+        });
+    });
+
+    // Close tooltips when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.tooltip-trigger') && !e.target.closest('.tooltip-popup')) {
+            document.querySelectorAll('.tooltip-popup.active').forEach(tooltip => {
+                tooltip.classList.remove('active');
+            });
+        }
+    });
 });

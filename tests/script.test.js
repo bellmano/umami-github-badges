@@ -60,7 +60,7 @@ describe('Script Functions', () => {
       document.getElementById('umamiUrl').value = '';
       global.generateBadge();
 
-      expect(global.alert).toHaveBeenCalledWith('Please fill in the required fields (Umami URL and Website ID)');
+      expect(global.alert).toHaveBeenCalledWith('Please fill in the required fields: (Umami URL and Website ID)');
     });
   });
 
