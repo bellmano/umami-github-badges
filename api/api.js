@@ -29,7 +29,7 @@ app.get('/api/:metric', async (req, res) => {
       website,
       token,
       style = 'for-the-badge',
-      color = 'blue',
+        color = '',
       label,
       logo,
       range = 'all',
@@ -217,10 +217,9 @@ function getDefaultLabel(metric) {
 }
 
 // Get appropriate color for metric
-function getMetricColor(metric, defaultColor, value) {
-  // Use custom color if provided
-  if (defaultColor !== 'blue') {
-    return defaultColor;
+function getMetricColor(metric, requestedColor, value) {
+  if (requestedColor && requestedColor !== 'auto') {
+    return requestedColor;
   }
 
   // Auto-select colors based on metric type
@@ -232,7 +231,7 @@ function getMetricColor(metric, defaultColor, value) {
     'avg-session': 'purple'
   };
 
-  return colorMap[metric] || defaultColor;
+  return colorMap[metric] || 'blue';
 }
 
 // Build shields.io URL

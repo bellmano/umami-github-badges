@@ -58,16 +58,17 @@ describe('API Functions', () => {
   test('getMetricColor handles custom colors, auto-select, and bounce-rate thresholds', () => {
     // Custom colors
     expect(getMetricColor('views', 'red', 100)).toBe('red');
+    expect(getMetricColor('views', 'blue', 100)).toBe('blue');
     // Auto-select
-    expect(getMetricColor('views', 'blue', 100)).toBe('brightgreen');
-    expect(getMetricColor('visitors', 'blue', 100)).toBe('green');
-    expect(getMetricColor('visits', 'blue', 100)).toBe('blue');
-    expect(getMetricColor('avg-session', 'blue', 100)).toBe('purple');
-    expect(getMetricColor('unknown-metric', 'blue', 50)).toBe('blue');
+    expect(getMetricColor('views', 'auto', 100)).toBe('brightgreen');
+    expect(getMetricColor('visitors', '', 100)).toBe('green');
+    expect(getMetricColor('visits', null, 100)).toBe('blue');
+    expect(getMetricColor('avg-session', undefined, 100)).toBe('purple');
+    expect(getMetricColor('unknown-metric', 'auto', 50)).toBe('blue');
     // Bounce rate thresholds
-    expect(getMetricColor('bounce-rate', 'blue', 80)).toBe('red');
-    expect(getMetricColor('bounce-rate', 'blue', 50)).toBe('orange');
-    expect(getMetricColor('bounce-rate', 'blue', 30)).toBe('green');
+    expect(getMetricColor('bounce-rate', 'auto', 80)).toBe('red');
+    expect(getMetricColor('bounce-rate', '', 50)).toBe('orange');
+    expect(getMetricColor('bounce-rate', null, 30)).toBe('green');
   });
 
   test('buildShieldsUrl builds correct URLs with and without logo', () => {
