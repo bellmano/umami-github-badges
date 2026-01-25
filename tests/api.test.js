@@ -36,10 +36,14 @@ describe('API Functions', () => {
     expect(formatNumber(0)).toBe('0');
   });
 
-  test('formatDuration formats to h, m, s with thresholds', () => {
-    expect(formatDuration(7200)).toBe('2.0h');
-    expect(formatDuration(180)).toBe('3.0m');
+  test('formatDuration formats to h, m, s with multiple units', () => {
+    expect(formatDuration(7200)).toBe('2h');
+    expect(formatDuration(7320)).toBe('2h 2m');
+    expect(formatDuration(7321)).toBe('2h 2m 1s');
+    expect(formatDuration(180)).toBe('3m');
+    expect(formatDuration(96)).toBe('1m 36s');
     expect(formatDuration(45)).toBe('45s');
+    expect(formatDuration(0)).toBe('0s');
   });
 
   test('getDefaultLabel returns labels for all metrics', () => {
@@ -84,7 +88,7 @@ describe('API Functions', () => {
     expect(formatMetricValue({ visitors: 2500000 }, 'visitors').formattedValue).toBe('2.5M');
     expect(formatMetricValue({ visits: 800 }, 'visits').formattedValue).toBe('800');
     expect(formatMetricValue({ bounces: 50, visits: 100 }, 'bounce-rate').formattedValue).toBe('50.0%');
-    expect(formatMetricValue({ totaltime: 180000, visits: 100 }, 'avg-session').formattedValue).toBe('2s');
+    expect(formatMetricValue({ totaltime: 200, visits: 100 }, 'avg-session').formattedValue).toBe('2s');
     expect(formatMetricValue({}, 'unknown').formattedValue).toBe('Unknown');
     
     // Missing data defaults
@@ -95,8 +99,8 @@ describe('API Functions', () => {
     expect(formatMetricValue({ bounces: 5 }, 'bounce-rate').formattedValue).toBe('500.0%');
     expect(formatMetricValue({ bounces: 3, visits: null }, 'bounce-rate').formattedValue).toBe('300.0%');
     expect(formatMetricValue({ bounces: 8, visits: -5 }, 'bounce-rate').formattedValue).toBe('800.0%');
-    expect(formatMetricValue({ totaltime: 5000, visits: 0 }, 'avg-session').formattedValue).toBe('5s');
-    expect(formatMetricValue({ totaltime: 60000 }, 'avg-session').formattedValue).toBe('1.0m');
+    expect(formatMetricValue({ totaltime: 5, visits: 0 }, 'avg-session').formattedValue).toBe('5s');
+    expect(formatMetricValue({ totaltime: 96, visits: 1 }, 'avg-session').formattedValue).toBe('1m 36s');
     
     // Error handling
     expect(formatMetricValue(null, 'views').formattedValue).toBe('Error');

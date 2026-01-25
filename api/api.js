@@ -149,9 +149,10 @@ function formatMetricValue(data, metric) {
         formattedValue = `${bounceRate.toFixed(1)}%`;
       },
       'avg-session': () => {
+        // Umami returns totaltime in seconds (total across all visits)
         const totalTime = data.totaltime || 0;
         const visits = (data.visits && data.visits > 0) ? data.visits : 1;
-        value = totalTime / visits / 1000; // Convert from ms to seconds
+        value = totalTime / visits;
         formattedValue = formatDuration(value);
       }
     };
@@ -185,13 +186,22 @@ function formatNumber(num) {
 
 // Format duration in seconds to human readable format
 function formatDuration(seconds) {
-  if (seconds >= 3600) {
-    return `${(seconds / 3600).toFixed(1)}h`;
+  const totalSeconds = Math.floor(seconds);
+  
+  if (totalSeconds === 0) {
+    return '0s';
   }
-  if (seconds >= 60) {
-    return `${(seconds / 60).toFixed(1)}m`;
-  }
-  return `${seconds.toFixed(0)}s`;
+  
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  
+  const parts = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (secs > 0) parts.push(`${secs}s`);
+  
+  return parts.join(' ');
 }
 
 // Get default label for metric
