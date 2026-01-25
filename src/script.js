@@ -21,7 +21,7 @@ function generateBadge() {
     if (color) params.append('color', color);
     if (label) params.append('label', label);
 
-    const badgeUrl = `${window.location.origin}/api/${metric}?${params.toString()}`;
+    const badgeUrl = `${globalThis.location.origin}/api/${metric}?${params.toString()}`;
     
     // Update preview and code
     document.getElementById('badgePreview').src = badgeUrl;
@@ -47,17 +47,20 @@ function getDefaultLabel(metric) {
 
 function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
-    element.select();
-    element.setSelectionRange(0, 99999);
-    document.execCommand('copy');
+    const text = element.value;
     
-    // Show feedback
-    const button = element.nextElementSibling;
-    const originalIcon = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check text-green-500"></i>';
-    setTimeout(() => {
-        button.innerHTML = originalIcon;
-    }, 1000);
+    // Use modern Clipboard API
+    navigator.clipboard.writeText(text).then(() => {
+        // Show feedback
+        const button = element.nextElementSibling;
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check text-green-500"></i>';
+        setTimeout(() => {
+            button.innerHTML = originalIcon;
+        }, 1000);
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+    });
 }
 
 // Function to update the icon based on theme
@@ -82,10 +85,10 @@ function updateThemeIcon(theme) {
 // Function to toggle theme
 function toggleTheme() {
     const htmlElement = document.documentElement;
-    const currentTheme = htmlElement.getAttribute('data-theme');
+    const currentTheme = htmlElement.dataset.theme;
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
 
-    htmlElement.setAttribute('data-theme', newTheme);
+    htmlElement.dataset.theme = newTheme;
     updateThemeIcon(newTheme);
     localStorage.setItem('theme', newTheme);
 }
@@ -124,10 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const htmlElement = document.documentElement;
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
-        htmlElement.setAttribute('data-theme', savedTheme);
+        htmlElement.dataset.theme = savedTheme;
         updateThemeIcon(savedTheme);
     } else {
-        updateThemeIcon(htmlElement.getAttribute('data-theme'));
+        updateThemeIcon(htmlElement.dataset.theme);
     }
 
     // Tooltip functionality
