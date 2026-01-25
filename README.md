@@ -2,6 +2,7 @@
 
 ![Total Page Views](https://umami-github-badges.vercel.app/api/views?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Total+Page+Views)
 ![Average Session Duration on Website](https://umami-github-badges.vercel.app/api/avg-session?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Average+Session+Duration+on+Website)
+![Unique Visitors](https://umami-github-badges.vercel.app/api/visitors?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Unique+Visitors)
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bellmano_umami-github-badges&metric=coverage&token=6e9bb50bb14b2d851f65c161bef4a5e41dc5050c)](https://sonarcloud.io/summary/overall?id=bellmano_umami-github-badges)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=bellmano_umami-github-badges&metric=security_rating&token=6e9bb50bb14b2d851f65c161bef4a5e41dc5050c)](https://sonarcloud.io/summary/overall?id=bellmano_umami-github-badges)
