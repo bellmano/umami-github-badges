@@ -18,6 +18,8 @@ You'll need:
 - Your Website ID (found in your website settings)
 - An API key (Account Settings → API keys)
 
+**:warning: Security Notice:** Your API key will be visible in the badge URL. This means anyone can view your website analytics data (views, visitors, etc.) but cannot modify settings or access other websites. Only use badges for public websites where you're comfortable sharing traffic statistics. You can rotate your API key anytime in Umami settings.
+
 **Note:** This service is designed for **Umami Cloud** (https://cloud.umami.is) which uses the API endpoint `https://api.umami.is/v1`. If you're self-hosting Umami, you'll need to modify the code to point to your instance.
 
 ### 2. Generate Your Badge
