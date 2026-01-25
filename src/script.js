@@ -171,3 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Export functions for testing (globalThis is always available in modern environments)
+globalThis.copyToClipboard = copyToClipboard;
+globalThis.generateBadge = generateBadge;
+globalThis.getDefaultLabel = getDefaultLabel;
