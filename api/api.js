@@ -260,7 +260,7 @@ app.get('/health', (req, res) => {
 /* istanbul ignore next */
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
-    console.log(`Umami GitHub Badges server running at http://localhost:${port}`);
+    console.log(`Umami GitHub Badges server running at: http://localhost:${port}`);
   });
 }
 
