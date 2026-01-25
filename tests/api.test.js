@@ -1,152 +1,241 @@
-const { fetchUmamiData, formatMetricValue, formatNumber, formatDuration, getDefaultLabel, getMetricColor, buildShieldsUrl } = require('../api/api.js');
-
-// Mock node-fetch
-jest.mock('node-fetch', () => jest.fn());
-
+// Mock node-fetch before requiring api
+jest.mock('node-fetch');
 const fetch = require('node-fetch');
 
+// Mock fs for Express to serve files
+jest.mock('fs');
+
+const {
+  fetchUmamiData,
+  formatMetricValue,
+  formatNumber,
+  formatDuration,
+  getDefaultLabel,
+  getMetricColor,
+  buildShieldsUrl
+} = require('../api/api');
+
+const app = require('../api/api');
+
+// Suppress console.error during tests
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  console.error.mockRestore();
+});
+
 describe('API Functions', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  
+  test('formatNumber handles all ranges with B, M, K suffixes', () => {
+    expect(formatNumber(5000000000)).toBe('5.0B');
+    expect(formatNumber(3500000)).toBe('3.5M');
+    expect(formatNumber(2500)).toBe('2.5K');
+    expect(formatNumber(500)).toBe('500');
+    expect(formatNumber(0)).toBe('0');
+  });
+
+  test('formatDuration formats to h, m, s with thresholds', () => {
+    expect(formatDuration(7200)).toBe('2.0h');
+    expect(formatDuration(180)).toBe('3.0m');
+    expect(formatDuration(45)).toBe('45s');
+  });
+
+  test('getDefaultLabel returns labels for all metrics', () => {
+    expect(getDefaultLabel('views')).toBe('Views');
+    expect(getDefaultLabel('visitors')).toBe('Visitors');
+    expect(getDefaultLabel('visits')).toBe('Visits');
+    expect(getDefaultLabel('bounce-rate')).toBe('Bounce Rate');
+    expect(getDefaultLabel('avg-session')).toBe('Avg Session');
+    expect(getDefaultLabel('unknown')).toBe('unknown');
+  });
+
+  test('getMetricColor handles custom colors, auto-select, and bounce-rate thresholds', () => {
+    // Custom colors
+    expect(getMetricColor('views', 'red', 100)).toBe('red');
+    // Auto-select
+    expect(getMetricColor('views', 'blue', 100)).toBe('brightgreen');
+    expect(getMetricColor('visitors', 'blue', 100)).toBe('green');
+    expect(getMetricColor('visits', 'blue', 100)).toBe('blue');
+    expect(getMetricColor('avg-session', 'blue', 100)).toBe('purple');
+    expect(getMetricColor('unknown-metric', 'blue', 50)).toBe('blue');
+    // Bounce rate thresholds
+    expect(getMetricColor('bounce-rate', 'blue', 80)).toBe('red');
+    expect(getMetricColor('bounce-rate', 'blue', 50)).toBe('orange');
+    expect(getMetricColor('bounce-rate', 'blue', 30)).toBe('green');
+  });
+
+  test('buildShieldsUrl builds correct URLs with and without logo', () => {
+    const url1 = buildShieldsUrl({ label: 'Views', message: '1.5K', color: 'green', style: 'flat' });
+    expect(url1).toContain('Views-1.5K-green');
+    expect(url1).toContain('style=flat');
+    expect(url1).not.toContain('logo=');
+
+    const url2 = buildShieldsUrl({ label: 'Test Label', message: '50%', color: 'blue', style: 'flat', logo: 'github' });
+    expect(url2).toContain('Test%20Label');
+    expect(url2).toContain('50%25');
+    expect(url2).toContain('logo=github');
+  });
+
+  test('formatMetricValue formats all metric types and handles edge cases', () => {
+    // All metric types
+    expect(formatMetricValue({ pageviews: 1500 }, 'views').formattedValue).toBe('1.5K');
+    expect(formatMetricValue({ visitors: 2500000 }, 'visitors').formattedValue).toBe('2.5M');
+    expect(formatMetricValue({ visits: 800 }, 'visits').formattedValue).toBe('800');
+    expect(formatMetricValue({ bounces: 50, visits: 100 }, 'bounce-rate').formattedValue).toBe('50.0%');
+    expect(formatMetricValue({ totaltime: 180000, visits: 100 }, 'avg-session').formattedValue).toBe('2s');
+    expect(formatMetricValue({}, 'unknown').formattedValue).toBe('Unknown');
+    
+    // Missing data defaults
+    expect(formatMetricValue({}, 'views').value).toBe(0);
+    
+    // Falsy visits values (undefined, null, false, 0, negative) - should default to 1
+    expect(formatMetricValue({ bounces: 10, visits: 0 }, 'bounce-rate').formattedValue).toBe('1000.0%');
+    expect(formatMetricValue({ bounces: 5 }, 'bounce-rate').formattedValue).toBe('500.0%');
+    expect(formatMetricValue({ bounces: 3, visits: null }, 'bounce-rate').formattedValue).toBe('300.0%');
+    expect(formatMetricValue({ bounces: 8, visits: -5 }, 'bounce-rate').formattedValue).toBe('800.0%');
+    expect(formatMetricValue({ totaltime: 5000, visits: 0 }, 'avg-session').formattedValue).toBe('5s');
+    expect(formatMetricValue({ totaltime: 60000 }, 'avg-session').formattedValue).toBe('1.0m');
+    
+    // Error handling
+    expect(formatMetricValue(null, 'views').formattedValue).toBe('Error');
   });
 
   describe('fetchUmamiData', () => {
-    it.skip('should fetch data for views metric', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({ pageviews: 100 })
-      };
-      fetch.mockResolvedValue(mockResponse);
-
-      const result = await fetchUmamiData('https://api.umami.is/v1', 'website123', 'token', 'views');
-
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('https://api.umami.is/v1/websites/website123/stats'),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'x-umami-api-key': 'token'
-          })
-        })
-      );
-      expect(result).toEqual({ pageviews: 100 });
+    beforeEach(() => {
+      fetch.mockClear();
     });
 
-    it.skip('should handle API errors', async () => {
-      const mockResponse = {
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-        text: jest.fn().mockResolvedValue('Not Found')
-      };
-      fetch.mockResolvedValue(mockResponse);
+    test('fetches with all date ranges and handles trailing slash', async () => {
+      fetch.mockResolvedValue({ ok: true, json: async () => ({ pageviews: 100 }) });
 
-      await expect(fetchUmamiData('https://api.umami.is/v1', 'website123', 'token', 'views')).rejects.toThrow('Umami API error: 404 Not Found');
-    });
-  });
-
-  describe('formatMetricValue', () => {
-    it('should format views', () => {
-      const data = { pageviews: 1500 };
-      const result = formatMetricValue(data, 'views');
-      expect(result).toEqual({ value: 1500, formattedValue: '1.5K' });
+      // Test 'all' range (year 2000)
+      await fetchUmamiData('https://api.umami.is/v1', 'test', 'token', 'views', 'all');
+      expect(fetch.mock.calls[0][0]).toContain('startAt=946684800000');
+      
+      // Test specific day range
+      await fetchUmamiData('https://api.umami.is/v1/', 'test', 'token', 'views', '7d');
+      expect(fetch.mock.calls[1][0]).not.toContain('946684800000');
+      expect(fetch.mock.calls[1][0]).not.toContain('//websites'); // Trailing slash removed
+      
+      // Test default parameter (no range provided)
+      await fetchUmamiData('https://api.umami.is/v1', 'test', 'token', 'views');
+      expect(fetch.mock.calls[2][0]).toContain('startAt=946684800000');
     });
 
-    it('should format visitors', () => {
-      const data = { visitors: 500 };
-      const result = formatMetricValue(data, 'visitors');
-      expect(result).toEqual({ value: 500, formattedValue: '500' });
-    });
+    test('handles errors', async () => {
+      fetch.mockResolvedValue({ ok: false, status: 401, statusText: 'Unauthorized', text: async () => 'Invalid' });
+      await expect(fetchUmamiData('https://api.umami.is/v1', 'test', 'token', 'views', 'all'))
+        .rejects.toThrow('Umami API error: 401 Unauthorized - Invalid');
 
-    it('should format visits', () => {
-      const data = { visits: 2000 };
-      const result = formatMetricValue(data, 'visits');
-      expect(result).toEqual({ value: 2000, formattedValue: '2.0K' });
-    });
-
-    it('should format bounce rate', () => {
-      const data = { bounces: 50, visits: 100 };
-      const result = formatMetricValue(data, 'bounce-rate');
-      expect(result).toEqual({ value: 50, formattedValue: '50.0%' });
-    });
-
-    it('should format average session', () => {
-      const data = { totaltime: 3600000, visits: 2 }; // 3600 seconds in ms
-      const result = formatMetricValue(data, 'avg-session');
-      expect(result).toEqual({ value: 1800, formattedValue: '30.0m' });
-    });
-
-    it('should handle missing data', () => {
-      const data = {};
-      const result = formatMetricValue(data, 'views');
-      expect(result).toEqual({ value: 0, formattedValue: '0' });
+      fetch.mockRejectedValue(new Error('Network failure'));
+      await expect(fetchUmamiData('https://api.umami.is/v1', 'test', 'token', 'views', 'all'))
+        .rejects.toThrow('Network failure');
     });
   });
 
-  describe('formatNumber', () => {
-    it('should format large numbers', () => {
-      expect(formatNumber(1500000)).toBe('1.5M');
-      expect(formatNumber(1000)).toBe('1.0K');
-      expect(formatNumber(100)).toBe('100');
-      expect(formatNumber(1500000000)).toBe('1.5B');
-    });
-  });
+  describe('Express Routes', () => {
+    let mockReq, mockRes;
 
-  describe('formatDuration', () => {
-    it('should format seconds to human readable format', () => {
-      expect(formatDuration(3661)).toBe('1.0h');
-      expect(formatDuration(120)).toBe('2.0m');
-      expect(formatDuration(45)).toBe('45s');
-      expect(formatDuration(7200)).toBe('2.0h');
-    });
-  });
-
-  describe('getDefaultLabel', () => {
-    it('should return correct labels', () => {
-      expect(getDefaultLabel('views')).toBe('Views');
-      expect(getDefaultLabel('visitors')).toBe('Visitors');
-      expect(getDefaultLabel('visits')).toBe('Visits');
-      expect(getDefaultLabel('bounce-rate')).toBe('Bounce Rate');
-      expect(getDefaultLabel('avg-session')).toBe('Avg Session');
-      expect(getDefaultLabel('unknown')).toBe('unknown');
-    });
-  });
-
-  describe('getMetricColor', () => {
-    it('should return custom color if not blue', () => {
-      expect(getMetricColor('views', 'red', 100)).toBe('red');
+    beforeEach(() => {
+      fetch.mockClear();
+      mockReq = { params: {}, query: {} };
+      mockRes = { redirect: jest.fn(), json: jest.fn(), sendFile: jest.fn() };
     });
 
-    it('should return auto color for blue', () => {
-      expect(getMetricColor('views', 'blue', 100)).toBe('brightgreen');
-      expect(getMetricColor('visitors', 'blue', 100)).toBe('green');
-      expect(getMetricColor('visits', 'blue', 100)).toBe('blue');
-      expect(getMetricColor('bounce-rate', 'blue', 80)).toBe('red');
-      expect(getMetricColor('bounce-rate', 'blue', 30)).toBe('green');
-      expect(getMetricColor('avg-session', 'blue', 100)).toBe('purple');
-    });
-  });
+    test('/ and /health routes work correctly', () => {
+      const indexRoute = app._router.stack.find(r => r.route?.path === '/').route.stack[0].handle;
+      indexRoute(mockReq, mockRes);
+      expect(mockRes.sendFile).toHaveBeenCalled();
 
-  describe('buildShieldsUrl', () => {
-    it('should build shields.io URL', () => {
-      const result = buildShieldsUrl({
-        label: 'Test',
-        message: '100',
-        color: 'green',
-        style: 'flat',
-        logo: 'github'
-      });
-      expect(result).toContain('https://img.shields.io/badge/Test-100-green?style=flat&logo=github');
+      const healthRoute = app._router.stack.find(r => r.route?.path === '/health').route.stack[0].handle;
+      healthRoute(mockReq, mockRes);
+      expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'ok' }));
     });
 
-    it('should build URL without logo', () => {
-      const result = buildShieldsUrl({
-        label: 'Test',
-        message: '100',
-        color: 'green',
-        style: 'flat'
-      });
-      expect(result).toContain('https://img.shields.io/badge/Test-100-green?style=flat');
-      expect(result).not.toContain('logo=');
+    test('/api/:metric validates parameters and generates badges', async () => {
+      const handler = app._router.stack.find(r => r.route?.path === '/api/:metric').route.stack[0].handle;
+      
+      // Missing website
+      mockReq.params = { metric: 'views' };
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('Missing%20Website%20ID'));
+      
+      // Missing token
+      mockRes.redirect.mockClear();
+      mockReq.query = { website: 'test' };
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('Missing%20API%20Token'));
+      
+      // Successful badge generation
+      mockRes.redirect.mockClear();
+      if (app.cache) app.cache.flushAll();
+      mockReq.query = { website: 'test', token: 'token123', style: 'flat', label: 'Custom' };
+      fetch.mockResolvedValue({ ok: true, json: async () => ({ pageviews: 1234 }) });
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('https://img.shields.io/badge/'));
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('Custom-1.2K'));
+    });
+
+    test('/api/:metric handles caching correctly', async () => {
+      const handler = app._router.stack.find(r => r.route?.path === '/api/:metric').route.stack[0].handle;
+      if (app.cache) app.cache.flushAll();
+      
+      mockReq.params = { metric: 'visits' };
+      mockReq.query = { website: 'cache-test', token: 'token-abc' };
+      fetch.mockResolvedValue({ ok: true, json: async () => ({ visits: 555 }) });
+      
+      // First request - fetches from API
+      await handler(mockReq, mockRes);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      
+      // Second request - uses cache
+      fetch.mockClear();
+      mockRes.redirect.mockClear();
+      await handler(mockReq, mockRes);
+      expect(fetch).toHaveBeenCalledTimes(0);
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('555'));
+    });
+
+    test('/api/:metric handles cache parameter variations', async () => {
+      const handler = app._router.stack.find(r => r.route?.path === '/api/:metric').route.stack[0].handle;
+      
+      mockReq.params = { metric: 'views' };
+      fetch.mockResolvedValue({ ok: true, json: async () => ({ pageviews: 100 }) });
+      
+      // Valid cache parameter
+      mockReq.query = { website: 'test1', token: 'token1', cache: '600' };
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalled();
+      
+      // Invalid cache (NaN) - uses default
+      mockReq.query = { website: 'test2', token: 'token2', cache: 'invalid' };
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalled();
+      
+      // Cache = 0 - uses default
+      mockReq.query = { website: 'test3', token: 'token3', cache: '0' };
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalled();
+    });
+
+    test('/api/:metric handles errors with style fallback', async () => {
+      const handler = app._router.stack.find(r => r.route?.path === '/api/:metric').route.stack[0].handle;
+      
+      mockReq.params = { metric: 'visitors' };
+      mockReq.query = { website: 'error-test', token: 'token' };
+      fetch.mockRejectedValue(new Error('Network error'));
+      
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('Failed%20to%20fetch'));
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('style=flat'));
+      
+      // Custom style in error
+      mockReq.query = { website: 'error-test2', token: 'token2', style: 'plastic' };
+      fetch.mockRejectedValue(new Error('Error'));
+      await handler(mockReq, mockRes);
+      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('style=plastic'));
     });
   });
 });
