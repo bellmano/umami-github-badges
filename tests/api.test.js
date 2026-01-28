@@ -146,7 +146,7 @@ describe('API Functions', () => {
     beforeEach(() => {
       fetch.mockClear();
       mockReq = { params: {}, query: {} };
-      mockRes = { redirect: jest.fn(), json: jest.fn(), sendFile: jest.fn() };
+      mockRes = { redirect: jest.fn(), json: jest.fn(), sendFile: jest.fn(), set: jest.fn() };
     });
 
     test('/ and /health routes work correctly', () => {
@@ -181,6 +181,13 @@ describe('API Functions', () => {
       await handler(mockReq, mockRes);
       expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('https://img.shields.io/badge/'));
       expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('Custom-1.2K'));
+      
+      // Verify cache headers are set
+      expect(mockRes.set).toHaveBeenCalledWith({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
     });
 
     test('/api/:metric handles caching correctly', async () => {
