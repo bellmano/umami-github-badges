@@ -1,8 +1,8 @@
 # :ramen: Umami GitHub Badges 
 
-![Total Page Views](https://umami-github-badges.vercel.app/api/views?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Total+Page+Views&cache=0&v=1)
-![Average Session Duration on Website](https://umami-github-badges.vercel.app/api/avg-session?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Average+Session+Duration+on+Website&cache=0&v=1)
-![Unique Visitors](https://umami-github-badges.vercel.app/api/visitors?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Unique+Visitors&cache=0&v=1)
+![Total Page Views](https://umami-github-badges.vercel.app/api/views?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Total+Page+Views&cache=0)
+![Average Session Duration on Website](https://umami-github-badges.vercel.app/api/avg-session?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Average+Session+Duration+on+Website&cache=0)
+![Unique Visitors](https://umami-github-badges.vercel.app/api/visitors?website=ca16f4b3-a794-4597-a7e9-abba6ee32112&token=api_O2dOgzOmyw1Y69y8HnngGdOtyoZ6N2Pi&range=all&style=for-the-badge&label=Unique+Visitors&cache=0)
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bellmano_umami-github-badges&metric=coverage&token=6e9bb50bb14b2d851f65c161bef4a5e41dc5050c)](https://sonarcloud.io/summary/overall?id=bellmano_umami-github-badges)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=bellmano_umami-github-badges&metric=security_rating&token=6e9bb50bb14b2d851f65c161bef4a5e41dc5050c)](https://sonarcloud.io/summary/overall?id=bellmano_umami-github-badges)
@@ -34,13 +34,13 @@ Visit: **[umami-github-badges.vercel.app](https://umami-github-badges.vercel.app
 
 **Option B: Create URL Manually**
 ```
-https://umami-github-badges.vercel.app/api/{metric}?website={WEBSITE_ID}&token={API_TOKEN}&range=all&style=for-the-badge&cache=0&v=1
+https://umami-github-badges.vercel.app/api/{metric}?website={WEBSITE_ID}&token={API_TOKEN}&range=all&style=for-the-badge&cache=0
 ```
 
 ### 3. Add to Your README
 
 ```markdown
-![Website Analytics](https://umami-github-badges.vercel.app/api/views?website=your-website-id&token=your-api-token&range=all&style=for-the-badge&cache=0&v=1)
+![Website Analytics](https://umami-github-badges.vercel.app/api/views?website=your-website-id&token=your-api-token&range=all&style=for-the-badge&cache=0)
 ```
 
 ## :bar_chart: Available Metrics

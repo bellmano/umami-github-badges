@@ -79,15 +79,35 @@ app.get('/api/:metric', async (req, res) => {
     res.set({
       'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
       'Pragma': 'no-cache',
-      'Expires': '0'
+      'Expires': '0',
+      'Content-Type': 'image/svg+xml'
     });
 
-    // Redirect to shields.io
-    res.redirect(shieldsUrl);
+    // Fetch the SVG and return it directly to avoid redirect caching
+    const badgeResponse = await fetch(shieldsUrl);
+    if (!badgeResponse.ok) {
+      throw new Error(`Shields.io error: ${badgeResponse.status} ${badgeResponse.statusText}`);
+    }
+    const badgeSvg = await badgeResponse.text();
+    res.status(badgeResponse.status).send(badgeSvg);
 
   } catch (error) {
     console.error('Error generating badge:', error);
-    res.redirect(`https://img.shields.io/badge/Error-Failed%20to%20fetch-red?style=${req.query.style || 'flat'}`);
+    const style = req.query.style || 'flat';
+    const errorUrl = `https://img.shields.io/badge/Error-Failed%20to%20fetch-red?style=${style}`;
+    try {
+      const errorResponse = await fetch(errorUrl);
+      const errorSvg = await errorResponse.text();
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Content-Type': 'image/svg+xml'
+      });
+      res.status(errorResponse.status).send(errorSvg);
+    } catch (fallbackError) {
+      res.redirect(errorUrl);
+    }
   }
 });
 

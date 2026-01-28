@@ -146,7 +146,14 @@ describe('API Functions', () => {
     beforeEach(() => {
       fetch.mockClear();
       mockReq = { params: {}, query: {} };
-      mockRes = { redirect: jest.fn(), json: jest.fn(), sendFile: jest.fn(), set: jest.fn() };
+      mockRes = {
+        redirect: jest.fn(),
+        json: jest.fn(),
+        sendFile: jest.fn(),
+        set: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        send: jest.fn()
+      };
     });
 
     test('/ and /health routes work correctly', () => {
@@ -177,16 +184,23 @@ describe('API Functions', () => {
       mockRes.redirect.mockClear();
       if (app.cache) app.cache.flushAll();
       mockReq.query = { website: 'test', token: 'token123', style: 'flat', label: 'Custom' };
-      fetch.mockResolvedValue({ ok: true, json: async () => ({ pageviews: 1234 }) });
+      fetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ pageviews: 1234 }),
+        text: async () => '<svg>badge</svg>'
+      });
       await handler(mockReq, mockRes);
-      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('https://img.shields.io/badge/'));
-      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('Custom-1.2K'));
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.send).toHaveBeenCalledWith('<svg>badge</svg>');
       
       // Verify cache headers are set
       expect(mockRes.set).toHaveBeenCalledWith({
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'Content-Type': 'image/svg+xml'
       });
     });
 
@@ -196,40 +210,52 @@ describe('API Functions', () => {
       
       mockReq.params = { metric: 'visits' };
       mockReq.query = { website: 'cache-test', token: 'token-abc' };
-      fetch.mockResolvedValue({ ok: true, json: async () => ({ visits: 555 }) });
+      fetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ visits: 555 }),
+        text: async () => '<svg>555</svg>'
+      });
       
       // First request - fetches from API
       await handler(mockReq, mockRes);
-      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(2);
       
       // Second request - uses cache
       fetch.mockClear();
-      mockRes.redirect.mockClear();
+      mockRes.send.mockClear();
       await handler(mockReq, mockRes);
-      expect(fetch).toHaveBeenCalledTimes(0);
-      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('555'));
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(mockRes.send).toHaveBeenCalledWith('<svg>555</svg>');
     });
 
     test('/api/:metric handles cache parameter variations', async () => {
       const handler = app._router.stack.find(r => r.route?.path === '/api/:metric').route.stack[0].handle;
       
       mockReq.params = { metric: 'views' };
-      fetch.mockResolvedValue({ ok: true, json: async () => ({ pageviews: 100 }) });
+      fetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ pageviews: 100 }),
+        text: async () => '<svg>badge</svg>'
+      });
       
       // Valid cache parameter
       mockReq.query = { website: 'test1', token: 'token1', cache: '600' };
       await handler(mockReq, mockRes);
-      expect(mockRes.redirect).toHaveBeenCalled();
+      expect(mockRes.send).toHaveBeenCalled();
       
       // Invalid cache (NaN) - uses default
       mockReq.query = { website: 'test2', token: 'token2', cache: 'invalid' };
       await handler(mockReq, mockRes);
-      expect(mockRes.redirect).toHaveBeenCalled();
+      expect(mockRes.send).toHaveBeenCalled();
       
       // Cache = 0 - uses default
       mockReq.query = { website: 'test3', token: 'token3', cache: '0' };
       await handler(mockReq, mockRes);
-      expect(mockRes.redirect).toHaveBeenCalled();
+      expect(mockRes.send).toHaveBeenCalled();
     });
 
     test('/api/:metric handles errors with style fallback', async () => {
@@ -245,9 +271,60 @@ describe('API Functions', () => {
       
       // Custom style in error
       mockReq.query = { website: 'error-test2', token: 'token2', style: 'plastic' };
-      fetch.mockRejectedValue(new Error('Error'));
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ visitors: 100 }),
+        text: async () => '<svg>badge</svg>'
+      });
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        text: async () => '<svg>error</svg>'
+      });
       await handler(mockReq, mockRes);
-      expect(mockRes.redirect).toHaveBeenCalledWith(expect.stringContaining('style=plastic'));
+      expect(mockRes.send).toHaveBeenCalledWith('<svg>error</svg>');
+    });
+
+    test('/api/:metric handles shields.io fetch error and returns error SVG', async () => {
+      const handler = app._router.stack.find(r => r.route?.path === '/api/:metric').route.stack[0].handle;
+
+      mockReq.params = { metric: 'views' };
+      mockReq.query = { website: 'shield-error', token: 'token', style: 'flat' };
+
+      // Umami stats fetch succeeds, shields fetch fails (not ok)
+      fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => ({ pageviews: 123 })
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 502,
+          statusText: 'Bad Gateway',
+          text: async () => 'Upstream error'
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => '<svg>error</svg>'
+        });
+
+      await handler(mockReq, mockRes);
+
+      expect(mockRes.set).toHaveBeenCalledWith({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Content-Type': 'image/svg+xml'
+      });
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.send).toHaveBeenCalledWith('<svg>error</svg>');
     });
   });
 });

@@ -21,7 +21,6 @@ function generateBadge() {
     if (color) params.append('color', color);
     if (label) params.append('label', label);
     params.append('cache', '0');  // Disable server-side caching
-    params.append('v', '1');      // Cache-busting for GitHub image cache
 
     const badgeUrl = `${globalThis.location.origin}/api/${metric}?${params.toString()}`;
     
