@@ -76,6 +76,12 @@ app.get('/api/:metric', async (req, res) => {
       logo
     });
 
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     // Redirect to shields.io
     res.redirect(shieldsUrl);
 
